@@ -17,33 +17,21 @@ final class Comment {
         self.updatedAt = updatedAt
     }
 
-    struct CodableComment: Codable {
+    struct Entity: EntityConvertibleType {
         var id: UUID
-        var parentBook: Book.CodableBook
         var text: String
         var createdAt: Date
         var updatedAt: Date
     }
 }
 
-extension Comment: SwiftDataTransferable {
-    func toCodableModel() -> CodableComment {
-        CodableComment(
+extension Comment: EntityConvertible {
+    func toEntity() -> Entity {
+        Entity(
             id: id,
-            parentBook: parentBook.toCodableModel(),
             text: text,
             createdAt: createdAt,
             updatedAt: updatedAt
-        )
-    }
-
-    static func toOriginalModel(from codableComment: CodableComment) -> Comment {
-        Comment(
-            id: codableComment.id,
-            parentBook: Book.toOriginalModel(from: codableComment.parentBook),
-            text: codableComment.text,
-            createdAt: codableComment.createdAt,
-            updatedAt: codableComment.updatedAt
         )
     }
 }

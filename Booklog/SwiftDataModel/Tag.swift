@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Tag {
+final class Tag: Identifiable {
     #Unique<Tag>([\.id], [\.name])
 
     var id: UUID
@@ -21,36 +21,25 @@ final class Tag {
         self.updatedAt = updatedAt
     }
 
-    struct CodableTag: Codable {
+    struct Entity: EntityConvertibleType {
         var id: UUID
         var name: String
-        var books: [Book.CodableBook]
+        var books: [Book.Entity] = []
         var hexColorString: String
         var createdAt: Date
         var updatedAt: Date
     }
 }
 
-extension Tag: SwiftDataTransferable {
-    func toCodableModel() -> CodableTag {
-        CodableTag(
+extension Tag: EntityConvertible {
+    func toEntity() -> Entity {
+        Entity(
             id: id,
             name: name,
-            books: books.map { $0.toCodableModel() },
+            books: books.map { $0.toEntity() },
             hexColorString: hexColorString,
             createdAt: createdAt,
             updatedAt: updatedAt
-        )
-    }
-
-    static func toOriginalModel(from codableModel: CodableTag) -> Tag {
-        Tag(
-            id: codableModel.id,
-            books: codableModel.books.map { Book.toOriginalModel(from: $0) },
-            name: codableModel.name,
-            hexColorString: codableModel.hexColorString,
-            createdAt: codableModel.createdAt,
-            updatedAt: codableModel.updatedAt
         )
     }
 }

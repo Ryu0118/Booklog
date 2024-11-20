@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "[Other Apps](https://apps.apple.com/jp/developer/ryunosuke-shibuya/id1588660637)" : {
       "localizations" : {
         "ja" : {
@@ -92,6 +95,9 @@
         }
       }
     },
+    "Color" : {
+
+    },
     "Completed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -144,6 +150,9 @@
         }
       }
     },
+    "Edit" : {
+
+    },
     "Enter a book title" : {
       "localizations" : {
         "ja" : {
@@ -165,6 +174,9 @@
       }
     },
     "Enter a page count" : {
+
+    },
+    "Enter a tag title" : {
 
     },
     "In progress" : {
@@ -197,6 +209,9 @@
           }
         }
       }
+    },
+    "No tags have been added" : {
+
     },
     "OK" : {
       "localizations" : {
@@ -253,6 +268,9 @@
           }
         }
       }
+    },
+    "Tag" : {
+
     },
     "This action cannot be undone." : {
       "localizations" : {

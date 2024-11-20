@@ -3,14 +3,15 @@ import SwiftData
 
 @Model
 final class Book {
-    #Unique<Book>([\.id], [\.title, \.status])
+    #Unique<Book>([\.id], [\.title, \.status], [\.priority, \.status])
 
-    @Relationship(inverse: \Tag.books) var tags: [Tag]
+     var tags: [Tag]
     @Relationship(deleteRule: .cascade, inverse: \Comment.parentBook) var comments: [Comment]
 
     var id: UUID
     var status: Status
     var title: String
+    var priority: Int
     var readData: ReadData?
     var authors: [String]
     var publisher: String?
@@ -23,15 +24,7 @@ final class Book {
     var createdAt: Date
     var updatedAt: Date
 
-    var thumbnailURL: URL? {
-        if let urlString = thumbnail ?? smallThumbnail {
-            URL(string: urlString)
-        } else {
-            nil
-        }
-    }
-
-    struct ReadData: Codable {
+    struct ReadData: Codable, Equatable, Hashable {
         var totalPage: Int
         var currentPage: Int
 
@@ -47,6 +40,7 @@ final class Book {
         status: Status,
         readData: ReadData? = nil,
         title: String,
+        priority: Int,
         authors: [String] = [],
         publisher: String? = nil,
         publishedDate: String? = nil,
@@ -61,6 +55,7 @@ final class Book {
         self.tags = tags
         self.comments = comments
         self.status = status
+        self.priority = priority
         self.readData = readData
         self.title = title
         self.authors = authors
@@ -74,14 +69,14 @@ final class Book {
         self.updatedAt = updatedAt
     }
 
-    struct CodableBook: Codable {
+    struct Entity: EntityConvertibleType {
         var id: UUID
-        var tags: [Tag.CodableTag]
-        var comments: [Comment.CodableComment]
-        var status: Status.CodableStatus
+        var tags: [Tag.Entity] = []
+        var comments: [Comment.Entity] = []
         var readData: ReadData?
         var title: String
-        var authors: [String]
+        var priority: Int
+        var authors: [String] = []
         var publisher: String?
         var publishedDate: String?
         var bookDescription: String?
@@ -90,18 +85,26 @@ final class Book {
         var expirationDate: Date?
         var createdAt: Date
         var updatedAt: Date
+
+        var thumbnailURL: URL? {
+            if let urlString = thumbnail ?? smallThumbnail {
+                URL(string: urlString)
+            } else {
+                nil
+            }
+        }
     }
 }
 
-extension Book: SwiftDataTransferable {
-    func toCodableModel() -> CodableBook {
-        CodableBook(
+extension Book: EntityConvertible {
+    func toEntity() -> Entity {
+        Entity(
             id: id,
-            tags: tags.map { $0.toCodableModel() },
-            comments: comments.map { $0.toCodableModel() },
-            status: status.toCodableModel(),
+            tags: tags.map { $0.toEntity() },
+            comments: comments.map { $0.toEntity() },
             readData: readData,
             title: title,
+            priority: priority,
             authors: authors,
             publisher: publisher,
             publishedDate: publishedDate,
@@ -111,26 +114,6 @@ extension Book: SwiftDataTransferable {
             expirationDate: expirationDate,
             createdAt: createdAt,
             updatedAt: updatedAt
-        )
-    }
-
-    static func toOriginalModel(from codableBook: CodableBook) -> Book {
-        Book(
-            id: codableBook.id,
-            tags: codableBook.tags.map { Tag.toOriginalModel(from: $0) },
-            comments: codableBook.comments.map { Comment.toOriginalModel(from: $0) },
-            status: Status.toOriginalModel(from: codableBook.status),
-            readData: codableBook.readData,
-            title: codableBook.title,
-            authors: codableBook.authors,
-            publisher: codableBook.publisher,
-            publishedDate: codableBook.publishedDate,
-            bookDescription: codableBook.bookDescription,
-            smallThumbnail: codableBook.smallThumbnail,
-            thumbnail: codableBook.thumbnail,
-            expirationDate: codableBook.expirationDate,
-            createdAt: codableBook.createdAt,
-            updatedAt: codableBook.updatedAt
         )
     }
 }

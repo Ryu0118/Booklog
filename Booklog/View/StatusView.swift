@@ -1,8 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct StatusView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.mainWindowSize) private var mainWindowSize
+    @Environment(\.modelContext) private var modelContext
+
     @State private var isBarcodeScannerPresented = false
     @State private var recognizedIsbn: String?
     @State private var isErrorAlertPresented = false
@@ -11,19 +14,20 @@ struct StatusView: View {
     @State private var isAddBookViewPresented = false
 
     let status: Status
+    @State var books: [Book.Entity] = []
 
     var body: some View {
         VStack {
             header
             ScrollView {
-                if status.books.isEmpty {
+                if books.isEmpty {
                     ContentUnavailableView(
                         "No books have been added to \"\(status.title)\"",
                         systemImage: "book.closed"
                     )
                 } else {
                     LazyVStack {
-                        ForEach(status.books) { book in
+                        ForEach(books) { book in
                             BookView(book: book)
                         }
                     }
@@ -66,6 +70,9 @@ struct StatusView: View {
                 AddBookView(status: status, viewType: .original)
             }
         }
+        .task {
+            await fetchBooks()
+        }
     }
 
     var header: some View {
@@ -84,7 +91,7 @@ struct StatusView: View {
             .background(Color(hexString: status.hexColorString, opacity: .medium))
             .clipShape(Capsule())
 
-            Text(status.books.count.description)
+            Text(books.count.description)
                 .font(.headline)
                 .foregroundStyle(Color(hexString: status.hexColorString, opacity: .medium))
 
@@ -112,6 +119,23 @@ struct StatusView: View {
             }
             .tint(.primary)
         }
+    }
+
+    private func fetchBooks() async {
+        do {
+            let id = status.id
+            let books = try modelContext.fetch(
+                FetchDescriptor<Book>(
+                    predicate: #Predicate {
+                        $0.status.id == id
+                    },
+                    sortBy: [
+                        SortDescriptor(\.priority)
+                    ]
+                )
+            )
+            self.books = books.map { $0.toEntity() }
+        } catch {}
     }
 
     private func onRecognize(isbn: String) async {

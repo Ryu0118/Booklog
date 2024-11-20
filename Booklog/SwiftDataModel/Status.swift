@@ -35,12 +35,11 @@ final class Status {
         self.updatedAt = updatedAt
     }
 
-    struct CodableStatus: Codable {
-        var books: [Book.CodableBook]
+    struct Entity: EntityConvertibleType {
+        var books: [Book.Entity]
         var id: UUID
         var title: String
         var priority: Int
-        var parentBoard: Board.CodableBoard?
         var hexColorString: String
         var createdAt: Date
         var updatedAt: Date
@@ -88,36 +87,16 @@ final class Status {
     }
 }
 
-extension Status: SwiftDataTransferable {
-    func toCodableModel() -> CodableStatus {
-        CodableStatus(
-            books: books.map { $0.toCodableModel() },
+extension Status: EntityConvertible {
+    func toEntity() -> Entity {
+        Entity(
+            books: books.map { $0.toEntity() },
             id: id,
             title: title,
             priority: priority,
-            parentBoard: parentBoard?.toCodableModel(),
             hexColorString: hexColorString,
             createdAt: createdAt,
             updatedAt: updatedAt
-        )
-    }
-
-    static func toOriginalModel(from codableModel: CodableStatus) -> Status {
-        let originalParentBoard: Board? =
-            if let parentBoard = codableModel.parentBoard {
-                Board.toOriginalModel(from: parentBoard)
-            } else {
-                nil
-            }
-        return Status(
-            id: codableModel.id,
-            books: codableModel.books.map { Book.toOriginalModel(from: $0) },
-            parentBoard: originalParentBoard,
-            title: codableModel.title,
-            priority: codableModel.priority,
-            hexColorString: codableModel.hexColorString,
-            createdAt: codableModel.createdAt,
-            updatedAt: codableModel.updatedAt
         )
     }
 }

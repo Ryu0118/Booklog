@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BookView: View {
-    let book: Book
+    let book: Book.Entity
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -32,28 +32,19 @@ struct BookView: View {
 
 #Preview("Normal") {
     BookView(
-        book: Book(
+        book: Book.Entity(
             id: UUID(),
             tags: [
-                Tag(
+                Tag.Entity(
                     id: UUID(),
-                    books: [],
-                    name: "Swift",
+                    name: "Swift", books: [],
                     hexColorString: "6B94B7",
                     createdAt: .now,
                     updatedAt: .now
                 )
             ],
-            status: Status(
-                id: UUID(),
-                books: [],
-                title: "",
-                priority: 0,
-                hexColorString: "",
-                createdAt: .now,
-                updatedAt: .now
-            ),
             title: "Mathematics Book",
+            priority: 0,
             createdAt: .now,
             updatedAt: .now
         )
@@ -62,36 +53,26 @@ struct BookView: View {
 
 #Preview("Long") {
     BookView(
-        book: Book(
+        book: Book.Entity(
             id: UUID(),
             tags: [
-                Tag(
+                Tag.Entity(
                     id: UUID(),
-                    books: [],
-                    name: "Swift",
+                    name: "Swift", books: [],
                     hexColorString: "6B94B7",
                     createdAt: .now,
                     updatedAt: .now
                 ),
-                Tag(
+                Tag.Entity(
                     id: UUID(),
-                    books: [],
-                    name: "Swift",
+                    name: "Swift", books: [],
                     hexColorString: "8460CC",
                     createdAt: .now,
                     updatedAt: .now
                 )
             ],
-            status: Status(
-                id: UUID(),
-                books: [],
-                title: "",
-                priority: 0,
-                hexColorString: "",
-                createdAt: .now,
-                updatedAt: .now
-            ),
             title: "Mathematics Book\nMathematics Book\nMathematics Book\nMathematics Book",
+            priority: 0,
             createdAt: .now,
             updatedAt: .now
         )

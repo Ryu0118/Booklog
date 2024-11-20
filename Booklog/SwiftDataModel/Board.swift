@@ -21,8 +21,8 @@ final class Board {
         self.updatedAt = updatedAt
     }
 
-    struct CodableBoard: Codable {
-        var status: [Status.CodableStatus]
+    struct Entity: EntityConvertibleType {
+        var status: [Status.Entity]
         var id: UUID
         var name: String
         var priority: Int
@@ -31,19 +31,8 @@ final class Board {
     }
 }
 
-extension Board: SwiftDataTransferable {
-    func toCodableModel() -> CodableBoard {
-        CodableBoard(status: status.map { $0.toCodableModel() }, id: id, name: name, priority: priority, createdAt: createdAt, updatedAt: updatedAt)
-    }
-
-    static func toOriginalModel(from codableBoard: CodableBoard) -> Board {
-        Board(
-            status: codableBoard.status.map { Status.toOriginalModel(from: $0) },
-            id: codableBoard.id,
-            name: codableBoard.name,
-            priority: codableBoard.priority,
-            createdAt: codableBoard.createdAt,
-            updatedAt: codableBoard.updatedAt
-        )
+extension Board: EntityConvertible {
+    func toEntity() -> Entity {
+        Entity(status: status.map { $0.toEntity() }, id: id, name: name, priority: priority, createdAt: createdAt, updatedAt: updatedAt)
     }
 }

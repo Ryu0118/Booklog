@@ -11,27 +11,27 @@ struct AddBookView: View {
     }
 
     @Environment(\.modelContext) private var modelContext
-    @State private var book: Book
+    @State private var book: Book.Entity
     @FocusState private var focusedField: FieldType?
 
     init(status: Status, viewType: ViewType) {
         let now = Date()
         switch viewType {
         case .original:
-            self.book = Book(
+            self.book = Book.Entity(
                 id: UUID(),
                 tags: [],
-                status: status,
                 title: "",
+                priority: status.books.count,
                 createdAt: now,
                 updatedAt: now
             )
         case .book(let formattedResponse):
-            self.book = Book(
+            self.book = Book.Entity(
                 id: UUID(),
                 tags: [],
-                status: status,
                 title: formattedResponse.title,
+                priority: status.books.count,
                 authors: formattedResponse.authors,
                 publisher: formattedResponse.publisher,
                 publishedDate: formattedResponse.publishedDate,
@@ -91,12 +91,31 @@ struct AddBookView: View {
                 )
                 .keyboardType(.numberPad)
                 .focused($focusedField, equals: .pageCount)
+                .onSubmit(of: .text) {
+                    focusedField = nil
+                }
+            }
+
+            Section("Tag") {
+                NavigationLink {
+                    SelectTagView(book: $book)
+                } label: {
+                    Group {
+                        if book.tags.isEmpty {
+                            Text("No tags have been added")
+                        } else {
+                            TagListView(tags: book.tags)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
             }
         }
         .listStyle(.insetGrouped)
-        .onTapGesture {
-            focusedField = nil
-        }
+        .contentShape(Rectangle())
+//        .simultaneousGesture(TapGesture().onEnded {
+//            focusedField = nil
+//        })
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
