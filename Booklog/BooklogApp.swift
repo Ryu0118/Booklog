@@ -4,16 +4,10 @@ import SwiftData
 @main
 struct BooklogApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Book.self,
-            Comment.self,
-            Status.self,
-            Tag.self
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(schema: BooklogConst.schema(), isStoredInMemoryOnly: false)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: BooklogConst.schema(), configurations: [modelConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -21,7 +15,10 @@ struct BooklogApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            GeometryReader { proxy in
+                ContentView()
+                    .environment(\.mainWindowSize, proxy.size)
+            }
         }
         .modelContainer(sharedModelContainer)
     }
