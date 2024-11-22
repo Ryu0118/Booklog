@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Status {
+final class Status: Identifiable {
     #Unique<Status>([\.id], [\.parentBoard, \.priority], [\.title, \.parentBoard])
 
     @Relationship(deleteRule: .cascade, inverse: \Book.status)

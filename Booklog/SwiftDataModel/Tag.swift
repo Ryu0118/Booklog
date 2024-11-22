@@ -24,7 +24,6 @@ final class Tag: Identifiable {
     struct Entity: EntityConvertibleType {
         var id: UUID
         var name: String
-        var books: [Book.Entity] = []
         var hexColorString: String
         var createdAt: Date
         var updatedAt: Date
@@ -36,10 +35,23 @@ extension Tag: EntityConvertible {
         Entity(
             id: id,
             name: name,
-            books: books.map { $0.toEntity() },
             hexColorString: hexColorString,
             createdAt: createdAt,
             updatedAt: updatedAt
         )
     }
+}
+
+extension Tag.Entity {
+    func toOriginalModel(books: [Book]) -> Tag {
+        Tag(
+            id: id,
+            books: books,
+            name: name,
+            hexColorString: hexColorString,
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
+    }
+
 }

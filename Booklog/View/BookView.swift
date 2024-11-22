@@ -1,18 +1,31 @@
 import SwiftUI
 
 struct BookView: View {
+    enum Const {
+        static let thumbnailWidth: CGFloat = 55
+        static let thumbnailHeight: CGFloat = 78
+    }
     let book: Book.Entity
 
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                AsyncImage(url: book.thumbnailURL) { image in
-                    image.resizable()
+                if let imageData = book.thumbnailData,
+                   let uiImage = UIImage(data: imageData)
+                {
+                    Image(uiImage: uiImage)
+                        .resizable()
                         .scaledToFit()
-                        .frame(width: 55, height: 78)
-                } placeholder: {
-                    Rectangle().fill(Color.gray)
-                        .frame(width: 55, height: 78)
+                        .frame(width: Const.thumbnailWidth, height: Const.thumbnailHeight)
+                } else {
+                    AsyncImage(url: book.thumbnailURL) { image in
+                        image.resizable()
+                            .scaledToFit()
+                            .frame(width: Const.thumbnailWidth, height: Const.thumbnailHeight)
+                    } placeholder: {
+                        Rectangle().fill(Color.gray)
+                            .frame(width: Const.thumbnailWidth, height: Const.thumbnailHeight)
+                    }
                 }
 
                 Text(book.title)
@@ -25,7 +38,7 @@ struct BookView: View {
             TagListView(tags: book.tags)
         }
         .padding()
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.background)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
@@ -37,7 +50,7 @@ struct BookView: View {
             tags: [
                 Tag.Entity(
                     id: UUID(),
-                    name: "Swift", books: [],
+                    name: "Swift",
                     hexColorString: "6B94B7",
                     createdAt: .now,
                     updatedAt: .now
@@ -58,14 +71,14 @@ struct BookView: View {
             tags: [
                 Tag.Entity(
                     id: UUID(),
-                    name: "Swift", books: [],
+                    name: "Swift",
                     hexColorString: "6B94B7",
                     createdAt: .now,
                     updatedAt: .now
                 ),
                 Tag.Entity(
                     id: UUID(),
-                    name: "Swift", books: [],
+                    name: "Swift",
                     hexColorString: "8460CC",
                     createdAt: .now,
                     updatedAt: .now

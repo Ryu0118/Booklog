@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-    func centered(_ stackType: CenteredModifier.StackType) -> some View {
+    nonisolated func centered(_ stackType: CenteredModifier.StackType) -> some View {
         modifier(CenteredModifier(stackType: stackType))
     }
 }

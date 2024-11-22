@@ -133,9 +133,9 @@ struct ContentView: View {
 
         do {
             try modelContext.transaction {
-                statuses.forEach { modelContext.insert($0) }
-                for status in statuses {
-                    status.parentBoard = board
+                statuses.forEach {
+                    $0.parentBoard = board
+                    modelContext.insert($0)
                 }
                 modelContext.insert(board)
             }

@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Comment {
+final class Comment: Identifiable {
     @Attribute(.unique) var id: UUID
     var parentBook: Book
     var text: String

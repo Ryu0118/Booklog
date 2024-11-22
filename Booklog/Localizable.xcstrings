@@ -34,6 +34,9 @@
         }
       }
     },
+    "Add book" : {
+
+    },
     "An error has occurred" : {
       "localizations" : {
         "ja" : {
@@ -75,6 +78,9 @@
         }
       }
     },
+    "Book cannot be found" : {
+
+    },
     "Booklog" : {
       "localizations" : {
         "ja" : {
@@ -96,7 +102,14 @@
       }
     },
     "Color" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色"
+          }
+        }
+      }
     },
     "Completed" : {
       "extractionState" : "manual",
@@ -115,6 +128,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新規ボードを作成"
+          }
+        }
+      }
+    },
+    "Deadline" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "期限"
           }
         }
       }
@@ -150,8 +173,35 @@
         }
       }
     },
+    "Description" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "概要"
+          }
+        }
+      }
+    },
     "Edit" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集"
+          }
+        }
+      }
+    },
+    "Enable" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効にする"
+          }
+        }
+      }
     },
     "Enter a book title" : {
       "localizations" : {
@@ -174,10 +224,24 @@
       }
     },
     "Enter a page count" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ページ数を入力してください"
+          }
+        }
+      }
     },
     "Enter a tag title" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグのタイトルを入力してください"
+          }
+        }
+      }
     },
     "In progress" : {
       "extractionState" : "manual",
@@ -211,7 +275,14 @@
       }
     },
     "No tags have been added" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグが追加されていません"
+          }
+        }
+      }
     },
     "OK" : {
       "localizations" : {
@@ -268,6 +339,9 @@
           }
         }
       }
+    },
+    "Status cannot be found" : {
+
     },
     "Tag" : {
 

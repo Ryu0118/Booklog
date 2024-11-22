@@ -2,10 +2,11 @@ import Foundation
 import SwiftData
 
 @Model
-final class Book {
+final class Book: Identifiable {
     #Unique<Book>([\.id], [\.title, \.status], [\.priority, \.status])
+    @Attribute(.externalStorage) var thumbnailData: Data?
 
-     var tags: [Tag]
+    @Relationship(inverse: \Tag.books) var tags: [Tag]
     @Relationship(deleteRule: .cascade, inverse: \Comment.parentBook) var comments: [Comment]
 
     var id: UUID
@@ -20,7 +21,7 @@ final class Book {
     var smallThumbnail: String?
     var thumbnail: String?
 
-    var expirationDate: Date?
+    var deadline: Date?
     var createdAt: Date
     var updatedAt: Date
 
@@ -35,6 +36,7 @@ final class Book {
 
     init(
         id: UUID,
+        thumbnailData: Data? = nil,
         tags: [Tag],
         comments: [Comment] = [],
         status: Status,
@@ -47,11 +49,12 @@ final class Book {
         bookDescription: String? = nil,
         smallThumbnail: String? = nil,
         thumbnail: String? = nil,
-        expirationDate: Date? = nil,
+        deadline: Date? = nil,
         createdAt: Date,
         updatedAt: Date
     ) {
         self.id = id
+        self.thumbnailData = thumbnailData
         self.tags = tags
         self.comments = comments
         self.status = status
@@ -64,13 +67,14 @@ final class Book {
         self.bookDescription = bookDescription
         self.smallThumbnail = smallThumbnail
         self.thumbnail = thumbnail
-        self.expirationDate = expirationDate
+        self.deadline = deadline
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
 
     struct Entity: EntityConvertibleType {
         var id: UUID
+        var thumbnailData: Data?
         var tags: [Tag.Entity] = []
         var comments: [Comment.Entity] = []
         var readData: ReadData?
@@ -82,7 +86,7 @@ final class Book {
         var bookDescription: String?
         var smallThumbnail: String?
         var thumbnail: String?
-        var expirationDate: Date?
+        var deadline: Date?
         var createdAt: Date
         var updatedAt: Date
 
@@ -100,6 +104,7 @@ extension Book: EntityConvertible {
     func toEntity() -> Entity {
         Entity(
             id: id,
+            thumbnailData: thumbnailData,
             tags: tags.map { $0.toEntity() },
             comments: comments.map { $0.toEntity() },
             readData: readData,
@@ -111,7 +116,31 @@ extension Book: EntityConvertible {
             bookDescription: bookDescription,
             smallThumbnail: smallThumbnail,
             thumbnail: thumbnail,
-            expirationDate: expirationDate,
+            deadline: deadline,
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
+    }
+}
+
+extension Book.Entity {
+    func toOriginalModel(status: Status, tags: [Tag], comments: [Comment]) -> Book {
+        Book(
+            id: id,
+            thumbnailData: thumbnailData,
+            tags: tags,
+            comments: comments,
+            status: status,
+            readData: readData,
+            title: title,
+            priority: priority,
+            authors: authors,
+            publisher: publisher,
+            publishedDate: publishedDate,
+            bookDescription: bookDescription,
+            smallThumbnail: smallThumbnail,
+            thumbnail: thumbnail,
+            deadline: deadline,
             createdAt: createdAt,
             updatedAt: updatedAt
         )

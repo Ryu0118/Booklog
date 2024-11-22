@@ -12,16 +12,26 @@ struct SelectTagView: View {
     @State private var tagToEdit: Tag.Entity?
 
     var body: some View {
-        TagListView(
-            tags: tags.map { $0.toEntity() },
-            selectedTags: Set(book.tags),
-            onTapGesture: { tag in
-                onTapTagGesture(tag)
-            },
-            onLongPressGesture: { tag in
-                onLongPressGesture(tag)
+        ScrollView {
+            if tags.isEmpty {
+                ContentUnavailableView("No tags have been added", image: "tag")
+            } else {
+                HStack(spacing: 0) {
+                    TagListView(
+                        tags: tags.map { $0.toEntity() },
+                        selectedTags: Set(book.tags),
+                        onTapGesture: { tag in
+                            onTapTagGesture(tag)
+                        },
+                        onLongPressGesture: { tag in
+                            onLongPressGesture(tag)
+                        }
+                    )
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 6)
             }
-        )
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -180,7 +190,6 @@ private struct AddTagView: View {
         let tag = Tag.Entity(
             id: UUID(),
             name: tagTitle,
-            books: [],
             hexColorString: color.hexString(),
             createdAt: now,
             updatedAt: now

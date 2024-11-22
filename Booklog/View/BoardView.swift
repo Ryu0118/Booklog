@@ -25,5 +25,6 @@ struct BoardView: View {
         .padding(.horizontal, 4)
         .navigationTitle(board.name)
         .navigationBarTitleDisplayMode(.inline)
+        .ignoresSafeArea(edges: .bottom)
     }
 }
