@@ -4,12 +4,21 @@ import SwiftData
 struct BoardView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    let board: Board
-    let status: [Status]
+    let boardName: String
+    @Query var status: [Status]
 
     init(board: Board) {
-        self.board = board
-        self.status = board.status.sorted(by: { $0.priority < $1.priority })
+        self.boardName = board.name
+        let id = board.id
+        _status = Query(
+            filter: #Predicate {
+                $0.parentBoard?.id == id
+            },
+            sort: [
+                SortDescriptor(\.priority)
+            ],
+            animation: .easeInOut
+        )
     }
 
     var body: some View {
@@ -23,7 +32,7 @@ struct BoardView: View {
             }
         }
         .padding(.horizontal, 4)
-        .navigationTitle(board.name)
+        .navigationTitle(boardName)
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(edges: .bottom)
     }

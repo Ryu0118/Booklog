@@ -34,16 +34,13 @@ struct AddBookView: View {
 
     private let status: Status
     private let otherBooksTitles: [String]
-    private let saveCompleted: () -> Void
 
     init(
         status: Status,
-        viewType: ViewType,
-        saveCompleted: @escaping () -> Void
+        viewType: ViewType
     ) {
         self.otherBooksTitles = status.books.map(\.title)
         self.status = status
-        self.saveCompleted = saveCompleted
         let now = Date()
         switch viewType {
         case .original:
@@ -236,7 +233,6 @@ struct AddBookView: View {
             let book = book.toOriginalModel(status: status, tags: tags, comments: [])
             modelContext.insert(book)
             try modelContext.save()
-            saveCompleted()
             dismiss()
         } catch {}
     }

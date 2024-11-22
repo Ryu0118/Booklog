@@ -13,7 +13,7 @@ struct StatusView: View {
     @State private var localizedError: (any LocalizedError)?
     @State private var scannedBook: GoogleBooksClient.FormattedResponse?
     @State private var isAddBookViewPresented = false
-    @State private var books: [Book.Entity] = []
+//    @State private var bookEntities: [Book.Entity] = []
     @State private var vstackHeight: CGFloat = 0
     @State private var scrollViewHeight: CGFloat = 0
 
@@ -21,6 +21,25 @@ struct StatusView: View {
     private let statusClient = StatusClient()
 
     let status: Status
+
+    @Query var books: [Book]
+    var bookEntities: [Book.Entity] {
+        books.map { $0.toEntity() }
+    }
+
+    init(status: Status) {
+        self.status = status
+        let id = status.id
+        _books = Query(
+            filter: #Predicate {
+                $0.status.id == id
+            },
+            sort: [
+                SortDescriptor(\.priority)
+            ],
+            animation: .easeInOut
+        )
+    }
 
     var body: some View {
         VStack {
@@ -39,20 +58,16 @@ struct StatusView: View {
                 .frame(maxHeight: horizontalSizeClass == .compact ? mainWindowSize.height : .infinity)
                 .contentShape(Rectangle())
                 .dropDestination(for: BookDraggableData.self) { draggableData, location in
-                    let isRefreshRequired = draggableData.lazy.map {
+                    draggableData.lazy.map {
                         move(
                             fromBookID: $0.bookID,
                             fromStatusID: $0.statusID,
-                            toBookID: books.last?.id,
+                            toBookID: bookEntities.last?.id,
                             toStatusID: status.id,
                             insertLast: true
                         )
                     }
-                        .allSatisfy { $0 }
-                    if isRefreshRequired {
-                        NotificationCenter.default.post(name: .reloadStatus, object: nil)
-                    }
-                    return isRefreshRequired
+                    .allSatisfy { $0 }
                 }
             }
             .onGeometryChange(for: CGFloat.self) { proxy in
@@ -89,35 +104,25 @@ struct StatusView: View {
         }
         .sheet(item: $scannedBook) { book in
             NavigationStack {
-                AddBookView(status: status, viewType: .book(book)) {
-                    fetchAndApplyBooks()
-                }
+                AddBookView(status: status, viewType: .book(book))
             }
         }
         .sheet(isPresented: $isAddBookViewPresented) {
             NavigationStack {
-                AddBookView(status: status, viewType: .original) {
-                    fetchAndApplyBooks()
-                }
+                AddBookView(status: status, viewType: .original)
             }
-        }
-        .onAppear {
-            fetchAndApplyBooks()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .reloadStatus)) { _ in
-            fetchAndApplyBooks()
         }
     }
 
     @ViewBuilder
     var core: some View {
-        if books.isEmpty {
+        if bookEntities.isEmpty {
             ContentUnavailableView(
                 "No books have been added to \"\(status.title)\"",
                 systemImage: "book.closed"
             )
         } else {
-            ForEach(books) { book in
+            ForEach(bookEntities) { book in
                 BookView(book: book)
                     .draggable(
                         BookDraggableData(
@@ -126,7 +131,7 @@ struct StatusView: View {
                         )
                     )
                     .dropDestination(for: BookDraggableData.self) { draggableData, location in
-                        let isRefreshRequired = draggableData.lazy.map {
+                        draggableData.lazy.map {
                             move(
                                 fromBookID: $0.bookID,
                                 fromStatusID: $0.statusID,
@@ -135,8 +140,6 @@ struct StatusView: View {
                             )
                         }
                         .allSatisfy { $0 }
-                        if isRefreshRequired { NotificationCenter.default.post(name: .reloadStatus, object: nil) }
-                        return isRefreshRequired
                     }
             }
         }
@@ -158,7 +161,7 @@ struct StatusView: View {
             .background(Color(hexString: status.hexColorString, opacity: .medium))
             .clipShape(Capsule())
 
-            Text(books.count.description)
+            Text(bookEntities.count.description)
                 .font(.headline)
                 .foregroundStyle(Color(hexString: status.hexColorString, opacity: .medium))
 
@@ -169,7 +172,7 @@ struct StatusView: View {
                     Button("Read barcode", systemImage: "barcode.viewfinder") {
                         isBarcodeScannerPresented = true
                     }
-                    Button("Search for books", systemImage: "text.page.badge.magnifyingglass") {}
+                    Button("Search for bookEntities", systemImage: "text.page.badge.magnifyingglass") {}
                     Button("Add a custom book", systemImage: "book.closed") {
                         isAddBookViewPresented = true
                     }
@@ -197,30 +200,27 @@ struct StatusView: View {
         toStatusID destinationStatusID: Status.ID,
         insertLast: Bool = false
     ) -> Bool {
-        // 1, 2, 3, 4, 5
-        // 1, 2, 5, 3, 4
-        // 1, 2, 3, 4, 5
         guard sourceBookID != destinationBookID else {
             return false
         }
 
         do {
             if sourceStatusID == destinationStatusID {
-                var books = try fetchBooks()
-                guard let sourceBookIndex = books.firstIndex(where: { $0.id == sourceBookID }),
-                      let destinationBookIndex = books.firstIndex(where: { $0.id == destinationBookID })
+                var bookEntities = try fetchBooks()
+                guard let sourceBookIndex = bookEntities.firstIndex(where: { $0.id == sourceBookID }),
+                      let destinationBookIndex = bookEntities.firstIndex(where: { $0.id == destinationBookID })
                 else {
                     return false
                 }
                 try modelContext.transaction {
-                    let sourceBook = books[sourceBookIndex]
-                    books.remove(at: sourceBookIndex)
+                    let sourceBook = bookEntities[sourceBookIndex]
+                    bookEntities.remove(at: sourceBookIndex)
                     if insertLast {
-                        books.append(sourceBook)
+                        bookEntities.append(sourceBook)
                     } else {
-                        books.insert(sourceBook, at: destinationBookIndex)
+                        bookEntities.insert(sourceBook, at: destinationBookIndex)
                     }
-                    books.enumerated().forEach { index, book in
+                    bookEntities.enumerated().forEach { index, book in
                         book.priority = index
                     }
                 }
@@ -231,25 +231,25 @@ struct StatusView: View {
                     book.status = status
                     book.priority = 0
 
-                    let books = try fetchBooks()
-                    books.enumerated().forEach { index, book in
+                    let bookEntities = try fetchBooks()
+                    bookEntities.enumerated().forEach { index, book in
                         book.priority = index
                     }
                 }
             } else {
-                var books = try fetchBooks(for: sourceStatusID)
+                var bookEntities = try fetchBooks(for: sourceStatusID)
                 var destinationStatusBooks = try fetchBooks(for: destinationStatusID)
                 let destinationStatus = try statusClient.fetchStatus(id: destinationStatusID, modelContext: modelContext)
-                guard let sourceBookIndex = books.firstIndex(where: { $0.id == sourceBookID }),
+                guard let sourceBookIndex = bookEntities.firstIndex(where: { $0.id == sourceBookID }),
                       let destinationBookIndex = destinationStatusBooks.firstIndex(where: { $0.id == destinationBookID })
                 else {
                     return false
                 }
-                let sourceBook = books[sourceBookIndex]
+                let sourceBook = bookEntities[sourceBookIndex]
                 try modelContext.transaction {
                     sourceBook.status = destinationStatus
-                    books.remove(at: sourceBookIndex)
-                    books.enumerated().forEach { index, book in
+                    bookEntities.remove(at: sourceBookIndex)
+                    bookEntities.enumerated().forEach { index, book in
                         book.priority = index
                     }
                     if insertLast {
@@ -275,12 +275,6 @@ struct StatusView: View {
 
     private func fetchBooks(for statusID: Status.ID) throws -> [Book] {
         return try bookClient.fetchBooks(for: statusID, modelContext: modelContext)
-    }
-
-    private func fetchAndApplyBooks() {
-        do {
-            self.books = try fetchBooks().map { $0.toEntity() }
-        } catch {}
     }
 
     private func onRecognize(isbn: String) async {

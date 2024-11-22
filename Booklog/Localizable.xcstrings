@@ -35,7 +35,14 @@
       }
     },
     "Add book" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本を追加"
+          }
+        }
+      }
     },
     "An error has occurred" : {
       "localizations" : {
@@ -79,7 +86,14 @@
       }
     },
     "Book cannot be found" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本が見つかりませんでした"
+          }
+        }
+      }
     },
     "Booklog" : {
       "localizations" : {
@@ -254,6 +268,17 @@
         }
       }
     },
+    "No bookEntities have been added to \"%@\"" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"に本が追加されていません"
+          }
+        }
+      }
+    },
     "No books have been added to \"%@\"" : {
       "localizations" : {
         "ja" : {
@@ -305,7 +330,14 @@
       }
     },
     "Page Count" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ページ数"
+          }
+        }
+      }
     },
     "Read barcode" : {
       "localizations" : {
@@ -328,9 +360,20 @@
       }
     },
     "Save" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        }
+      }
+    },
+    "Search for bookEntities" : {
 
     },
     "Search for books" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -341,10 +384,24 @@
       }
     },
     "Status cannot be found" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ステータスが見つかりませんでした"
+          }
+        }
+      }
     },
     "Tag" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグ"
+          }
+        }
+      }
     },
     "This action cannot be undone." : {
       "localizations" : {
@@ -378,7 +435,14 @@
       }
     },
     "Unknown error" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明なエラー"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
