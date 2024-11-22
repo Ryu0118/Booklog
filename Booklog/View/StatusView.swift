@@ -44,7 +44,8 @@ struct StatusView: View {
                             fromBookID: $0.bookID,
                             fromStatusID: $0.statusID,
                             toBookID: books.last?.id,
-                            toStatusID: status.id
+                            toStatusID: status.id,
+                            insertLast: true
                         )
                     }
                         .allSatisfy { $0 }
@@ -83,6 +84,8 @@ struct StatusView: View {
         .alert("An error has occurred", isPresented: $isErrorAlertPresented, presenting: localizedError) { error in
             Button("OK", role: .cancel) {
             }
+        } message: { error in
+            Text(error.localizedDescription)
         }
         .sheet(item: $scannedBook) { book in
             NavigationStack {
@@ -191,7 +194,8 @@ struct StatusView: View {
         fromBookID sourceBookID: Book.ID,
         fromStatusID sourceStatusID: Status.ID,
         toBookID destinationBookID: Book.ID?,
-        toStatusID destinationStatusID: Status.ID
+        toStatusID destinationStatusID: Status.ID,
+        insertLast: Bool = false
     ) -> Bool {
         // 1, 2, 3, 4, 5
         // 1, 2, 5, 3, 4
@@ -211,7 +215,11 @@ struct StatusView: View {
                 try modelContext.transaction {
                     let sourceBook = books[sourceBookIndex]
                     books.remove(at: sourceBookIndex)
-                    books.insert(sourceBook, at: destinationBookIndex)
+                    if insertLast {
+                        books.append(sourceBook)
+                    } else {
+                        books.insert(sourceBook, at: destinationBookIndex)
+                    }
                     books.enumerated().forEach { index, book in
                         book.priority = index
                     }
@@ -244,7 +252,11 @@ struct StatusView: View {
                     books.enumerated().forEach { index, book in
                         book.priority = index
                     }
-                    destinationStatusBooks.insert(sourceBook, at: destinationBookIndex)
+                    if insertLast {
+                        destinationStatusBooks.append(sourceBook)
+                    } else {
+                        destinationStatusBooks.insert(sourceBook, at: destinationBookIndex)
+                    }
                     destinationStatusBooks.enumerated().forEach { index, book in
                         book.priority = index
                     }

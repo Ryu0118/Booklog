@@ -181,6 +181,7 @@ private struct AddTagView: View {
                 Button("Save") {
                     addButtonTapped()
                 }
+                .disabled(tagTitle.count > 20)
             }
         }
     }

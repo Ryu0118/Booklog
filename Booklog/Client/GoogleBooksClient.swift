@@ -12,7 +12,7 @@ struct GoogleBooksClient: Sendable {
                 value: keyword
             )
         ])
-        let (data, response) = try await session.data(from: url)
+        let (data, _) = try await session.data(from: url)
         let rawResponse = try jsonDecoder.decode(RawResponse.self, from: data)
         let books = rawResponse.items.map { $0.format() }
 
@@ -31,7 +31,7 @@ struct GoogleBooksClient: Sendable {
                 value: "isbn:" + isbn
             )
         ])
-        let (data, response) = try await session.data(from: url)
+        let (data, _) = try await session.data(from: url)
         let rawResponse = try jsonDecoder.decode(RawResponse.self, from: data)
 
         guard let book = rawResponse.items.map({ $0.format() }).first else {

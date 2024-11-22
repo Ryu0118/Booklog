@@ -376,6 +376,9 @@
           }
         }
       }
+    },
+    "Unknown error" : {
+
     }
   },
   "version" : "1.0"

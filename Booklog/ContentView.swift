@@ -11,6 +11,12 @@ struct ContentView: View {
     @State private var isTargeted: Bool = false
     @State private var isDeleteConfirmationAlertPresented = false
     @State private var boardToDelete: Board?
+    @State private var isErrorAlertPresented = false
+    @State private var localizedError: (any LocalizedError)?
+
+    var newBoardButtonDisabled: Bool {
+        newBoardName.isEmpty || boards.lazy.map(\.name).contains(newBoardName)
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -60,7 +66,7 @@ struct ContentView: View {
                 Button("OK") {
                     createNewBoardOKButtonTapped()
                 }
-                .disabled(newBoardName.isEmpty)
+                .disabled(newBoardButtonDisabled)
             }
             .alert("Are you sure you want to delete ‘\(boardToDelete?.name ?? "Board")’ completely?", isPresented: $isDeleteConfirmationAlertPresented) {
                 Button("Cancel", role: .cancel) {}
@@ -79,6 +85,12 @@ struct ContentView: View {
                 }
             }
         }
+        .alert("An error has occurred", isPresented: $isErrorAlertPresented, presenting: localizedError) { error in
+            Button("OK", role: .cancel) {
+            }
+        } message: { error in
+            Text(error.localizedDescription)
+        }
         .onAppear {
             if boards.isEmpty {
                 initializeBoard()
@@ -95,15 +107,21 @@ struct ContentView: View {
             boardToDelete = nil
         }
 
-        try? modelContext.transaction {
-            modelContext.delete(board)
-            for (index, board) in boards.lazy.filter({ $0.id == board.id }).enumerated() {
-                board.priority = index
-            }
-        }
+        let boardsAfterDelete = boards.lazy.filter({ $0.id != board.id })
 
         if selectedBoardID == board.id.uuidString {
-            selectBoard(boards.first)
+            selectBoard(boardsAfterDelete.first)
+        }
+
+        do {
+            try modelContext.transaction {
+                modelContext.delete(board)
+                for (index, board) in boardsAfterDelete.enumerated() {
+                    board.priority = index
+                }
+            }
+        } catch {
+            showError(error: BooklogError.unknownError)
         }
     }
 
@@ -132,18 +150,18 @@ struct ContentView: View {
         )
 
         do {
-            try modelContext.transaction {
-                statuses.forEach {
-                    $0.parentBoard = board
-                    modelContext.insert($0)
-                }
-                modelContext.insert(board)
-            }
+            modelContext.insert(board)
+            try modelContext.save()
         } catch {
-            print(error)
+            showError(error: BooklogError.unknownError)
         }
 
         return board
+    }
+
+    private func showError(error: any LocalizedError) {
+        isErrorAlertPresented = true
+        localizedError = error
     }
 
     private func initializeBoard() {

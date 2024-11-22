@@ -26,7 +26,10 @@ struct AddBookView: View {
     @FocusState private var focusedField: FieldType?
 
     var saveButtonDisabled: Bool {
-        book.title.isEmpty || otherBooksTitles.contains(book.title)
+        book.title.isEmpty ||
+        otherBooksTitles.contains(book.title) ||
+        book.title.count > 100 ||
+        (book.bookDescription?.count ?? 0) > 1000
     }
 
     private let status: Status
