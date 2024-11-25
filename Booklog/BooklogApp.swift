@@ -21,5 +21,6 @@ struct BooklogApp: App {
             }
         }
         .modelContainer(sharedModelContainer)
+        .modelContainer(for: Book.self, isUndoEnabled: true)
     }
 }

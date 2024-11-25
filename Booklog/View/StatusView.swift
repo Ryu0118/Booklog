@@ -13,9 +13,12 @@ struct StatusView: View {
     @State private var localizedError: (any LocalizedError)?
     @State private var scannedBook: GoogleBooksClient.FormattedResponse?
     @State private var isAddBookViewPresented = false
-//    @State private var bookEntities: [Book.Entity] = []
     @State private var vstackHeight: CGFloat = 0
     @State private var scrollViewHeight: CGFloat = 0
+    @State private var isRenameStatusNameAlertPresented = false
+    @State private var newStatusName = ""
+    @State private var isAllDeleting = false
+    @State private var isColorPalettePresented = false
 
     private let bookClient = BookClient()
     private let statusClient = StatusClient()
@@ -23,8 +26,13 @@ struct StatusView: View {
     let status: Status
 
     @Query var books: [Book]
+
     var bookEntities: [Book.Entity] {
         books.map { $0.toEntity() }
+    }
+
+    var newStatusNameOKButtonDisabled: Bool {
+        status.parentBoard?.status.lazy.map(\.title).contains(newStatusName) ?? false || newStatusName.isEmpty
     }
 
     init(status: Status) {
@@ -53,9 +61,8 @@ struct StatusView: View {
                 } action: {
                     vstackHeight = $0
                 }
-                .padding(.bottom, horizontalSizeClass == .compact ? 0 : scrollViewHeight - vstackHeight)
+                .padding(.bottom, horizontalSizeClass == .compact ? 0 : max(0, scrollViewHeight - vstackHeight))
                 .frame(width: horizontalSizeClass == .compact ? mainWindowSize.width : 350)
-                .frame(maxHeight: horizontalSizeClass == .compact ? mainWindowSize.height : .infinity)
                 .contentShape(Rectangle())
                 .dropDestination(for: BookDraggableData.self) { draggableData, location in
                     draggableData.lazy.map {
@@ -111,6 +118,29 @@ struct StatusView: View {
             NavigationStack {
                 AddBookView(status: status, viewType: .original)
             }
+        }
+        .alert("Rename", isPresented: $isRenameStatusNameAlertPresented) {
+            TextField("Enter a new status name", text: $newStatusName)
+            Button("Cancel", role: .cancel) {}
+            Button("OK") {
+                newStatusNameAlertOKButtonTapped()
+            }
+            .disabled(newStatusNameOKButtonDisabled)
+        }
+        .alert("Do you really want to delete all of them?", isPresented: $isAllDeleting) {
+            Button("Yes", role: .destructive) {
+                deleteAllBooksButtonTapped()
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+        .sheet(isPresented: $isColorPalettePresented) {
+            ColorPickerWellView(
+                selectedColor: Color(hexString: status.hexColorString),
+                onColorPicked: {
+                    onColorSelected($0)
+                }
+            )
         }
     }
 
@@ -172,7 +202,7 @@ struct StatusView: View {
                     Button("Read barcode", systemImage: "barcode.viewfinder") {
                         isBarcodeScannerPresented = true
                     }
-                    Button("Search for bookEntities", systemImage: "text.page.badge.magnifyingglass") {}
+                    Button("Search for books", systemImage: "text.page.badge.magnifyingglass") {}
                     Button("Add a custom book", systemImage: "book.closed") {
                         isAddBookViewPresented = true
                     }
@@ -182,8 +212,15 @@ struct StatusView: View {
                 }
 
                 Menu {
-                    Button("Rename", systemImage: "pencil") {}
-                    Button("Delete all", systemImage: "trash", role: .destructive) {}
+                    Button("Rename", systemImage: "pencil") {
+                        isRenameStatusNameAlertPresented = true
+                    }
+                    Button("Change color theme", systemImage: "paintpalette") {
+                        isColorPalettePresented = true
+                    }
+                    Button("Delete all", systemImage: "trash", role: .destructive) {
+                        isAllDeleting = true
+                    }
                 } label: {
                     Image(systemName: "ellipsis")
                         .padding(8)
@@ -191,6 +228,13 @@ struct StatusView: View {
             }
             .tint(.primary)
         }
+    }
+
+    private func newStatusNameAlertOKButtonTapped() {
+        try? modelContext.transaction {
+            status.title = newStatusName
+        }
+        newStatusName = ""
     }
 
     private func move(
@@ -292,6 +336,35 @@ struct StatusView: View {
     private func showError(error: any LocalizedError) {
         isErrorAlertPresented = true
         localizedError = error
+    }
+
+    private func deleteAllBooksButtonTapped() {
+        let statusID = status.id
+        do {
+            try modelContext.transaction {
+                let booksToDelete = try modelContext.fetch(
+                    FetchDescriptor<Book>(
+                        predicate: #Predicate { $0.status.id == statusID }
+                    )
+                )
+
+                for book in booksToDelete {
+                    modelContext.delete(book)
+                }
+            }
+        } catch {
+            showError(error: BooklogError.unknownError)
+        }
+    }
+
+    private func onColorSelected(_ uiColor: UIColor) {
+        do {
+            try modelContext.transaction {
+                status.hexColorString = uiColor.hexString()
+            }
+        } catch {
+            showError(error: BooklogError.unknownError)
+        }
     }
 
     struct BookDraggableData: Transferable, Codable {

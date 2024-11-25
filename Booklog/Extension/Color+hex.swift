@@ -33,8 +33,8 @@ extension Color {
             a = Float(components[3])
         }
 
-        if alpha {
-            return String(
+        return if alpha {
+            String(
                 format: "%02lX%02lX%02lX%02lX",
                 lroundf(r * 255),
                 lroundf(g * 255),
@@ -42,7 +42,7 @@ extension Color {
                 lroundf(a * 255)
             )
         } else {
-            return String(
+            String(
                 format: "%02lX%02lX%02lX",
                 lroundf(r * 255),
                 lroundf(g * 255),

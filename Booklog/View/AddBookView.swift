@@ -123,10 +123,11 @@ struct AddBookView: View {
             if let photoPickerItem = photoPickerItems.first {
                 Task {
                     if let loadedImage = try await photoPickerItem.loadTransferable(type: Data.self),
-                       let uiImage = UIImage(data: loadedImage)
+                       let uiImage = UIImage(data: loadedImage),
+                       let resizedImage = uiImage.resize(size: CGSize(width: uiImage.size.width / 10, height: uiImage.size.height / 10))
                     {
-                        book.thumbnailData = uiImage.pngData()
-                        photoPickedImage = uiImage
+                        book.thumbnailData = resizedImage.pngData()
+                        photoPickedImage = resizedImage
                     }
                 }
             }

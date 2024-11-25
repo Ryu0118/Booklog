@@ -35,6 +35,14 @@ struct BookView: View {
                 Spacer(minLength: 0)
             }
 
+            if let readData = book.readData {
+                ProgressView(
+                    "Page \(readData.currentPage) / \(readData.totalPage) (\(Decimal.FormatStyle.Percent().format(Decimal(readData.progress))))",
+                    value: readData.progress
+                )
+                .font(.caption)
+            }
+
             TagListView(tags: book.tags)
         }
         .padding()

@@ -115,6 +115,16 @@
         }
       }
     },
+    "Change color theme" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カラーテーマを変更する"
+          }
+        }
+      }
+    },
     "Color" : {
       "localizations" : {
         "ja" : {
@@ -197,6 +207,16 @@
         }
       }
     },
+    "Do you really want to delete all of them?" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本当に全て削除しますか？"
+          }
+        }
+      }
+    },
     "Edit" : {
       "localizations" : {
         "ja" : {
@@ -237,6 +257,16 @@
         }
       }
     },
+    "Enter a new status name" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいステータス名を入力してください"
+          }
+        }
+      }
+    },
     "Enter a page count" : {
       "localizations" : {
         "ja" : {
@@ -264,17 +294,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "進行中"
-          }
-        }
-      }
-    },
-    "No bookEntities have been added to \"%@\"" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"%@\"に本が追加されていません"
           }
         }
       }
@@ -329,6 +348,22 @@
         }
       }
     },
+    "Page %lld / %lld (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %1$lld / %2$lld (%3$@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ページ %1$lld / %2$lld (%3$@)"
+          }
+        }
+      }
+    },
     "Page Count" : {
       "localizations" : {
         "ja" : {
@@ -369,11 +404,7 @@
         }
       }
     },
-    "Search for bookEntities" : {
-
-    },
     "Search for books" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -440,6 +471,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不明なエラー"
+          }
+        }
+      }
+    },
+    "Yes" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "はい"
           }
         }
       }
