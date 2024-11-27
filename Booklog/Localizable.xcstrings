@@ -254,9 +254,6 @@
         }
       }
     },
-    "Do you really want to delete \"%@\"" : {
-
-    },
     "Do you really want to delete \"%@\"?" : {
       "localizations" : {
         "ja" : {

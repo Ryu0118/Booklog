@@ -120,7 +120,7 @@ struct BoardView: View {
         } message: { error in
             Text(error.localizedDescription)
         }
-        .alert("Do you really want to delete \"\(board.name)\"", isPresented: $isBoardDeleting) {
+        .alert("Do you really want to delete \"\(board.name)\"?", isPresented: $isBoardDeleting) {
             Button("Yes", role: .destructive) {
                 do {
                     try modelContext.transaction {
