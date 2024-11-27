@@ -16,7 +16,7 @@ struct StatusView: View {
     @State private var vstackHeight: CGFloat = 0
     @State private var scrollViewHeight: CGFloat = 0
     @State private var isRenameStatusNameAlertPresented = false
-    @State private var newStatusName = ""
+    @State private var newStatusName: String
     @State private var isAllDeleting = false
     @State private var isColorPalettePresented = false
 
@@ -47,6 +47,7 @@ struct StatusView: View {
             ],
             animation: .easeInOut
         )
+        newStatusName = status.title
     }
 
     var body: some View {
@@ -64,15 +65,23 @@ struct StatusView: View {
                 .padding(.bottom, horizontalSizeClass == .compact ? 0 : max(0, scrollViewHeight - vstackHeight))
                 .frame(width: horizontalSizeClass == .compact ? mainWindowSize.width : 350)
                 .contentShape(Rectangle())
-                .dropDestination(for: BookDraggableData.self) { draggableData, location in
+                .dropDestination(for: DraggableData.self) { draggableData, location in
                     draggableData.lazy.map {
-                        move(
-                            fromBookID: $0.bookID,
-                            fromStatusID: $0.statusID,
-                            toBookID: bookEntities.last?.id,
-                            toStatusID: status.id,
-                            insertLast: true
-                        )
+                        switch $0 {
+                        case .book(let data):
+                            move(
+                                fromBookID: data.bookID,
+                                fromStatusID: data.statusID,
+                                toBookID: bookEntities.last?.id,
+                                toStatusID: status.id,
+                                insertLast: true
+                            )
+                        case .status(let sourceStatus):
+                            move(
+                                fromStatusID: sourceStatus.statusID,
+                                toStatusID: status.id
+                            )
+                        }
                     }
                     .allSatisfy { $0 }
                 }
@@ -142,6 +151,26 @@ struct StatusView: View {
                 }
             )
         }
+        .draggable(StatusDraggableData(statusID: status.id))
+        .dropDestination(for: DraggableData.self) { draggableData, location in
+            draggableData.lazy.map {
+                switch $0 {
+                case .book(let data):
+                    move(
+                        fromBookID: data.bookID,
+                        fromStatusID: data.statusID,
+                        toBookID: bookEntities.last?.id,
+                        toStatusID: status.id
+                    )
+                case .status(let sourceStatus):
+                    move(
+                        fromStatusID: sourceStatus.statusID,
+                        toStatusID: status.id
+                    )
+                }
+            }
+            .allSatisfy { $0 }
+        }
     }
 
     @ViewBuilder
@@ -160,14 +189,22 @@ struct StatusView: View {
                             statusID: status.id
                         )
                     )
-                    .dropDestination(for: BookDraggableData.self) { draggableData, location in
+                    .dropDestination(for: DraggableData.self) { draggableData, location in
                         draggableData.lazy.map {
-                            move(
-                                fromBookID: $0.bookID,
-                                fromStatusID: $0.statusID,
-                                toBookID: book.id,
-                                toStatusID: status.id
-                            )
+                            switch $0 {
+                            case .book(let data):
+                                move(
+                                    fromBookID: data.bookID,
+                                    fromStatusID: data.statusID,
+                                    toBookID: book.id,
+                                    toStatusID: status.id
+                                )
+                            case .status(let sourceStatus):
+                                move(
+                                    fromStatusID: sourceStatus.statusID,
+                                    toStatusID: status.id
+                                )
+                            }
                         }
                         .allSatisfy { $0 }
                     }
@@ -231,10 +268,71 @@ struct StatusView: View {
     }
 
     private func newStatusNameAlertOKButtonTapped() {
-        try? modelContext.transaction {
-            status.title = newStatusName
+        do {
+            try modelContext.transaction {
+                status.title = newStatusName
+            }
+            newStatusName = status.title
+        } catch {
+            showError(error: BooklogError.unknownError)
         }
-        newStatusName = ""
+    }
+
+    private func move(
+        fromStatusID sourceStatusID: Status.ID,
+        toStatusID destinationStatusID: Status.ID
+    ) -> Bool {
+        guard sourceStatusID != destinationStatusID else {
+            return false
+        }
+
+        do {
+            let sourceStatus = try statusClient.fetchStatus(id: sourceStatusID, modelContext: modelContext)
+            let destinationStatus = try statusClient.fetchStatus(id: destinationStatusID, modelContext: modelContext)
+
+            guard let sourceParentBoard = sourceStatus.parentBoard,
+                  let destinationParentBoard = destinationStatus.parentBoard
+            else {
+                return false
+            }
+
+            var sourceStatuses = sourceParentBoard.status.sorted(by: { $0.priority < $1.priority })
+            var destinationStatuses = destinationParentBoard.status.sorted(by: { $0.priority < $1.priority })
+
+            guard let sourceStatusIndex = sourceStatuses.firstIndex(of: sourceStatus),
+                  let destinationStatusIndex = destinationStatuses.firstIndex(of: destinationStatus)
+            else {
+                return false
+            }
+
+            if sourceParentBoard.id == destinationParentBoard.id {
+                sourceStatuses.remove(at: sourceStatusIndex)
+                sourceStatuses.insert(sourceStatus, at: destinationStatusIndex)
+
+                try modelContext.transaction {
+                    for (index, status) in sourceStatuses.enumerated() {
+                        status.priority = index
+                    }
+                }
+            } else {
+                try modelContext.transaction {
+                    sourceStatuses.remove(at: sourceStatusIndex)
+                    destinationStatuses.insert(sourceStatus, at: destinationStatusIndex)
+
+                    sourceStatus.parentBoard = destinationStatus.parentBoard
+
+                    for (index, status) in sourceStatuses.enumerated() {
+                        status.priority = index
+                    }
+                    for (index, status) in destinationStatuses.enumerated() {
+                        status.priority = index
+                    }
+                }
+            }
+            return true
+        } catch {
+            return false
+        }
     }
 
     private func move(
@@ -372,7 +470,25 @@ struct StatusView: View {
         let statusID: Status.ID
 
         static var transferRepresentation: some TransferRepresentation {
-            CodableRepresentation(for: BookDraggableData.self, contentType: .data)
+            CodableRepresentation(for: BookDraggableData.self, contentType: .book)
+        }
+    }
+
+    struct StatusDraggableData: Transferable, Codable {
+        let statusID: Status.ID
+
+        static var transferRepresentation: some TransferRepresentation {
+            CodableRepresentation(for: StatusDraggableData.self, contentType: .status)
+        }
+    }
+
+    enum DraggableData: Transferable {
+        case book(BookDraggableData)
+        case status(StatusDraggableData)
+
+        static var transferRepresentation: some TransferRepresentation {
+            ProxyRepresentation(importing: { DraggableData.book($0) })
+            ProxyRepresentation(importing: { DraggableData.status($0) })
         }
     }
 }

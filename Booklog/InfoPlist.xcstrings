@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Booklog Book" : {
+
+    },
+    "Booklog Status" : {
+
+    },
     "CFBundleName" : {
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
