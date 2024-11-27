@@ -176,7 +176,7 @@ struct AddBookView: View {
             matching: .images,
             preferredItemEncoding: .current,
             photoLibrary: .shared()
-        ) { [thumbnailURL = book.thumbnailURL ?? BooklogConst.noImageThumbnailURL, photoPickedImage] in
+        ) { [thumbnailURL = book.thumbnailURL, photoPickedImage] in
             Group {
                 if let photoPickedImage {
                     Image(uiImage: photoPickedImage).thumbnail()
