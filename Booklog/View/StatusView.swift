@@ -26,6 +26,7 @@ struct StatusView: View {
     @State private var isConfirmDeleteAlertPresented = false
     @State private var isCurrentNumberOfPagesFieldPresented = false
     @State private var isStatusDeleting = false
+    @State private var isBookSearchViewPresented = false
 
     private let bookClient = BookClient()
     private let statusClient = StatusClient()
@@ -173,6 +174,8 @@ struct StatusView: View {
             Button("Yes", role: .destructive) {
                 deleteStatusButtonTapped()
             }
+        } message: {
+            Text("All books in \"\(status.title)\" will be deleted.")
         }
         .alert("Enter the current number of pages", isPresented: $isCurrentNumberOfPagesFieldPresented, presenting: focusedBook) { focusedBook in
             if let readData = focusedBook.readData {
@@ -204,6 +207,9 @@ struct StatusView: View {
                     onColorSelected($0)
                 }
             )
+        }
+        .sheet(isPresented: $isBookSearchViewPresented) {
+            BookSearchView(status: status)
         }
         .draggable(StatusDraggableData(statusID: status.id))
         .dropDestination(for: DraggableData.self) { draggableData, location in
@@ -320,7 +326,9 @@ struct StatusView: View {
                     Button("Read barcode", systemImage: "barcode.viewfinder") {
                         isBarcodeScannerPresented = true
                     }
-                    Button("Search for books", systemImage: "text.page.badge.magnifyingglass") {}
+                    Button("Search for books", systemImage: "text.page.badge.magnifyingglass") {
+                        isBookSearchViewPresented = true
+                    }
                     Button("Add a custom book", systemImage: "book.closed") {
                         isAddBookViewPresented = true
                     }
@@ -339,6 +347,7 @@ struct StatusView: View {
                     Button("Delete all books", systemImage: "trash", role: .destructive) {
                         isAllDeleting = true
                     }
+                    .disabled(books.isEmpty)
                     Button("Delete \"\(status.title)\"", systemImage: "trash", role: .destructive) {
                         isStatusDeleting = true
                     }

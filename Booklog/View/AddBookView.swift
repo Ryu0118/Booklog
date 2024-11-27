@@ -59,13 +59,18 @@ struct AddBookView: View {
     private let otherBooksTitles: [String]
     private let viewType: ViewType
 
+    private let onAddButtonTap: (() -> Void)?
+
     init(
         status: Status,
-        viewType: ViewType
+        viewType: ViewType,
+        onAddButtonTap: (() -> Void)? = nil
     ) {
         self.viewType = viewType
         self.otherBooksTitles = status.books.map(\.title)
         self.status = status
+        self.onAddButtonTap = onAddButtonTap
+
         let now = Date()
         switch viewType {
         case .new(let createType):
@@ -114,11 +119,13 @@ struct AddBookView: View {
                 .focused($focusedField, equals: .title)
 
             Section("Description") {
-                TextEditor(
+                TextField(
+                    "Enter a description",
                     text: Binding<String>(
                         get: { book.bookDescription ?? "" },
                         set: { book.bookDescription = $0 }
-                    )
+                    ),
+                    axis: .vertical
                 )
             }
 

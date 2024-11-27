@@ -60,7 +60,7 @@ struct GoogleBooksClient: Sendable {
 
             struct VolumeInfo: Codable, Sendable {
                 let title: String
-                let authors: [String]
+                let authors: [String]?
                 let publisher: String?
                 let publishedDate: String?
                 let description: String?
@@ -74,7 +74,7 @@ struct GoogleBooksClient: Sendable {
         }
     }
 
-    struct FormattedResponse: Decodable, Identifiable {
+    struct FormattedResponse: Decodable, Identifiable, Hashable {
         var id: String { title }
 
         let title: String
@@ -91,7 +91,7 @@ extension GoogleBooksClient.RawResponse.Item {
     func format() -> GoogleBooksClient.FormattedResponse {
         GoogleBooksClient.FormattedResponse(
             title: volumeInfo.title,
-            authors: volumeInfo.authors,
+            authors: volumeInfo.authors ?? [],
             publisher: volumeInfo.publisher,
             publishedDate: volumeInfo.publishedDate,
             description: volumeInfo.description,

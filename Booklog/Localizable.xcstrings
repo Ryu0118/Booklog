@@ -61,6 +61,16 @@
         }
       }
     },
+    "All books in \"%@\" will be deleted." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”にある本は全て削除されます"
+          }
+        }
+      }
+    },
     "An error has occurred" : {
       "localizations" : {
         "ja" : {
@@ -304,6 +314,16 @@
         }
       }
     },
+    "Enter a description" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "概要を入力してください"
+          }
+        }
+      }
+    },
     "Enter a new board name" : {
       "localizations" : {
         "ja" : {
@@ -350,6 +370,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在のページ数を入力"
+          }
+        }
+      }
+    },
+    "Enter the name of the book you want to search" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索したい本の名前を入力"
           }
         }
       }
@@ -467,6 +497,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存"
+          }
+        }
+      }
+    },
+    "Search books" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本を探す"
           }
         }
       }
