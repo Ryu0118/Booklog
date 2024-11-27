@@ -18,6 +18,10 @@ struct ContentView: View {
         newBoardName.isEmpty || boards.lazy.map(\.name).contains(newBoardName)
     }
 
+    var allBoardTitles: [String] {
+        boards.map(\.name)
+    }
+
     var body: some View {
         NavigationSplitView {
             List(
@@ -79,7 +83,7 @@ struct ContentView: View {
         } detail: {
             if let selectedBoard {
                 NavigationStack {
-                    BoardView(board: selectedBoard)
+                    BoardView(board: selectedBoard, allBoardTitles: allBoardTitles)
                 }
             }
         }
