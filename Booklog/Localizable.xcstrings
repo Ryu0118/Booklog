@@ -2,7 +2,14 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“”"
+          }
+        }
+      }
     },
     "[Other Apps](https://apps.apple.com/jp/developer/ryunosuke-shibuya/id1588660637)" : {
       "localizations" : {
@@ -20,6 +27,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "[ソースコード](https://github.com/Ryu0118/Booklog)"
+          }
+        }
+      }
+    },
+    "%lld days remaining" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残り%lld日"
           }
         }
       }
@@ -156,6 +173,16 @@
         }
       }
     },
+    "Create a new status" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新規ステータスを作成"
+          }
+        }
+      }
+    },
     "Deadline" : {
       "localizations" : {
         "ja" : {
@@ -187,12 +214,22 @@
         }
       }
     },
-    "Delete all" : {
+    "Delete \"%@\"" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "全て削除"
+            "value" : "“%@”を削除"
+          }
+        }
+      }
+    },
+    "Delete all books" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本を全て削除"
           }
         }
       }
@@ -207,12 +244,32 @@
         }
       }
     },
+    "Do you really want to delete \"%@\"?" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本当に”%@”を削除しますか？"
+          }
+        }
+      }
+    },
     "Do you really want to delete all of them?" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "本当に全て削除しますか？"
+          }
+        }
+      }
+    },
+    "Do you really want to delete this book?" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本当にこの本を削除しますか？"
           }
         }
       }
@@ -283,6 +340,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タグのタイトルを入力してください"
+          }
+        }
+      }
+    },
+    "Enter the current number of pages" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のページ数を入力"
           }
         }
       }

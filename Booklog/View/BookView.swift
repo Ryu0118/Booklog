@@ -35,12 +35,34 @@ struct BookView: View {
                 Spacer(minLength: 0)
             }
 
+            if let bookDescription = book.bookDescription {
+                Text(bookDescription)
+                    .font(.callout)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.9)
+            }
+
+            if let deadline = book.deadline {
+                let remainingDays = max(0, Calendar.current.numberOfDaysBetween(Date(), and: deadline))
+                HStack {
+                    Label("Deadline", systemImage: "calendar")
+                    Spacer()
+                    Text(deadline, format: .dateTime.year().month().day())
+                    Text("\(remainingDays) days remaining")
+                }
+                .font(.footnote)
+                .lineLimit(1)
+                .padding(.vertical, 4)
+            }
+
             if let readData = book.readData {
-                ProgressView(
-                    "Page \(readData.currentPage) / \(readData.totalPage) (\(Decimal.FormatStyle.Percent().format(Decimal(readData.progress))))",
-                    value: readData.progress
-                )
-                .font(.caption)
+                ProgressView(value: readData.progress) {
+                    Label(
+                        "Page \(readData.currentPage) / \(readData.totalPage) (\(Decimal.FormatStyle.Percent().format(Decimal(readData.progress))))",
+                        systemImage: "book.pages"
+                    )
+                    .font(.footnote)
+                }
             }
 
             TagListView(tags: book.tags)

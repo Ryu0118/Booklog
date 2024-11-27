@@ -44,9 +44,7 @@ struct ContentView: View {
                 if boards.last == board {
                     Section("Other") {
                         Label("[Source Code](https://github.com/Ryu0118/Booklog)", systemImage: "text.word.spacing")
-                            .tint(.primary)
                         Label("[Other Apps](https://apps.apple.com/jp/developer/ryunosuke-shibuya/id1588660637)", systemImage: "app.gift")
-                            .tint(.primary)
                     }
                 }
             }

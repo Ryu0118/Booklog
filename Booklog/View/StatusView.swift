@@ -19,6 +19,13 @@ struct StatusView: View {
     @State private var newStatusName: String
     @State private var isAllDeleting = false
     @State private var isColorPalettePresented = false
+    @State private var isDialogPresented = false
+    @State private var editingBook: Book?
+    @State private var deletingBook: Book?
+    @State private var focusedBook: Book.Entity?
+    @State private var isConfirmDeleteAlertPresented = false
+    @State private var isCurrentNumberOfPagesFieldPresented = false
+    @State private var isStatusDeleting = false
 
     private let bookClient = BookClient()
     private let statusClient = StatusClient()
@@ -32,7 +39,16 @@ struct StatusView: View {
     }
 
     var newStatusNameOKButtonDisabled: Bool {
-        status.parentBoard?.status.lazy.map(\.title).contains(newStatusName) ?? false || newStatusName.isEmpty
+        status.parentBoard?.status.lazy.map(\.title).contains(newStatusName) ?? false || newStatusName.isEmpty || newStatusName.count > 20
+    }
+
+    var currentNumberOfPagesFieldDisabled: Bool {
+        if let readData = focusedBook?.readData {
+            readData.currentPage > readData.totalPage ||
+            readData.currentPage < 0
+        } else {
+            false
+        }
     }
 
     init(status: Status) {
@@ -120,12 +136,17 @@ struct StatusView: View {
         }
         .sheet(item: $scannedBook) { book in
             NavigationStack {
-                AddBookView(status: status, viewType: .book(book))
+                AddBookView(status: status, viewType: .new(.book(book)))
             }
         }
         .sheet(isPresented: $isAddBookViewPresented) {
             NavigationStack {
-                AddBookView(status: status, viewType: .original)
+                AddBookView(status: status, viewType: .new(.original))
+            }
+        }
+        .sheet(item: $editingBook) { book in
+            NavigationStack {
+                AddBookView(status: status, viewType: .edit(book))
             }
         }
         .alert("Rename", isPresented: $isRenameStatusNameAlertPresented) {
@@ -142,6 +163,39 @@ struct StatusView: View {
             }
         } message: {
             Text("This action cannot be undone.")
+        }
+        .alert("Do you really want to delete this book?", isPresented: $isConfirmDeleteAlertPresented, presenting: deletingBook) { book in
+            Button("Yes", role: .destructive) {
+                deleteBookButtonTapped(for: book)
+            }
+        }
+        .alert("Do you really want to delete \"\(status.title)\"?", isPresented: $isStatusDeleting) {
+            Button("Yes", role: .destructive) {
+                deleteStatusButtonTapped()
+            }
+        }
+        .alert("Enter the current number of pages", isPresented: $isCurrentNumberOfPagesFieldPresented, presenting: focusedBook) { focusedBook in
+            if let readData = focusedBook.readData {
+                TextField(
+                    "",
+                    text: Binding<String>(
+                        get: { readData.currentPage.description },
+                        set: {
+                            if let page = Int($0) {
+                                self.focusedBook?.readData?.currentPage = page
+                            }
+                        }
+                    )
+                )
+                .keyboardType(.numberPad)
+
+                Button("OK") {
+                    changeCurrentNumberOfPages(of: focusedBook, readData: self.focusedBook?.readData ?? readData)
+                }
+                .disabled(currentNumberOfPagesFieldDisabled)
+
+                Button("Cancel", role: .cancel) {}
+            }
         }
         .sheet(isPresented: $isColorPalettePresented) {
             ColorPickerWellView(
@@ -182,32 +236,59 @@ struct StatusView: View {
             )
         } else {
             ForEach(bookEntities) { book in
-                BookView(book: book)
-                    .draggable(
-                        BookDraggableData(
-                            bookID: book.id,
-                            statusID: status.id
-                        )
-                    )
-                    .dropDestination(for: DraggableData.self) { draggableData, location in
-                        draggableData.lazy.map {
-                            switch $0 {
-                            case .book(let data):
-                                move(
-                                    fromBookID: data.bookID,
-                                    fromStatusID: data.statusID,
-                                    toBookID: book.id,
-                                    toStatusID: status.id
-                                )
-                            case .status(let sourceStatus):
-                                move(
-                                    fromStatusID: sourceStatus.statusID,
-                                    toStatusID: status.id
-                                )
-                            }
+                Button {
+                    isDialogPresented = true
+                    focusedBook = book
+                } label: {
+                    BookView(book: book)
+                }
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .confirmationDialog("", isPresented: $isDialogPresented, presenting: focusedBook) { bookEntity in
+                    if bookEntity.readData != nil {
+                        Button("Enter the current number of pages") {
+                            isCurrentNumberOfPagesFieldPresented = true
                         }
-                        .allSatisfy { $0 }
                     }
+                    Button("Edit") {
+                        do {
+                            let book = try bookClient.fetchBook(id: bookEntity.id, modelContext: modelContext)
+                            editingBook = book
+                        } catch {}
+                    }
+                    Button("Delete", role: .destructive) {
+                        do {
+                            let book = try bookClient.fetchBook(id: bookEntity.id, modelContext: modelContext)
+                            isConfirmDeleteAlertPresented = true
+                            deletingBook = book
+                        } catch {}
+                    }
+                }
+                .draggable(
+                    BookDraggableData(
+                        bookID: book.id,
+                        statusID: status.id
+                    )
+                )
+                .dropDestination(for: DraggableData.self) { draggableData, location in
+                    draggableData.lazy.map {
+                        switch $0 {
+                        case .book(let data):
+                            move(
+                                fromBookID: data.bookID,
+                                fromStatusID: data.statusID,
+                                toBookID: book.id,
+                                toStatusID: status.id
+                            )
+                        case .status(let sourceStatus):
+                            move(
+                                fromStatusID: sourceStatus.statusID,
+                                toStatusID: status.id
+                            )
+                        }
+                    }
+                    .allSatisfy { $0 }
+                }
             }
         }
     }
@@ -255,8 +336,11 @@ struct StatusView: View {
                     Button("Change color theme", systemImage: "paintpalette") {
                         isColorPalettePresented = true
                     }
-                    Button("Delete all", systemImage: "trash", role: .destructive) {
+                    Button("Delete all books", systemImage: "trash", role: .destructive) {
                         isAllDeleting = true
+                    }
+                    Button("Delete \"\(status.title)\"", systemImage: "trash", role: .destructive) {
+                        isStatusDeleting = true
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -449,6 +533,38 @@ struct StatusView: View {
                 for book in booksToDelete {
                     modelContext.delete(book)
                 }
+            }
+        } catch {
+            showError(error: BooklogError.unknownError)
+        }
+    }
+
+    private func deleteBookButtonTapped(for book: Book) {
+        do {
+            try modelContext.transaction {
+                modelContext.delete(book)
+            }
+        } catch {
+            showError(error: BooklogError.unknownError)
+        }
+    }
+
+    private func changeCurrentNumberOfPages(of focusedBook: Book.Entity, readData: Book.ReadData) {
+        do {
+            try modelContext.transaction {
+                let book = try bookClient.fetchBook(id: focusedBook.id, modelContext: modelContext)
+                book.readData = readData
+            }
+        } catch {
+            showError(error: BooklogError.unknownError)
+        }
+        self.focusedBook = nil
+    }
+
+    private func deleteStatusButtonTapped() {
+        do {
+            try modelContext.transaction {
+                modelContext.delete(status)
             }
         } catch {
             showError(error: BooklogError.unknownError)

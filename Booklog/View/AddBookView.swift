@@ -7,9 +7,32 @@ struct AddBookView: View {
         static let thumbnailWidth: CGFloat = 150
         static let thumbnailHeight: CGFloat = 211
     }
-    enum ViewType {
+
+    enum CreateType {
         case original
         case book(GoogleBooksClient.FormattedResponse)
+    }
+
+    enum ViewType {
+        case new(CreateType)
+        case edit(Book)
+
+        var book: Book? {
+            switch self {
+            case .new: nil
+            case .edit(let book):
+                book
+            }
+        }
+
+        var isCreateMode: Bool {
+            switch self {
+            case .new:
+                true
+            case .edit:
+                false
+            }
+        }
     }
 
     enum FieldType: Equatable {
@@ -27,47 +50,58 @@ struct AddBookView: View {
 
     var saveButtonDisabled: Bool {
         book.title.isEmpty ||
-        otherBooksTitles.contains(book.title) ||
+        (viewType.isCreateMode ? otherBooksTitles.contains(book.title) : otherBooksTitles.filter { viewType.book?.title != $0 }.contains(book.title)) ||
         book.title.count > 100 ||
         (book.bookDescription?.count ?? 0) > 1000
     }
 
     private let status: Status
     private let otherBooksTitles: [String]
+    private let viewType: ViewType
 
     init(
         status: Status,
         viewType: ViewType
     ) {
+        self.viewType = viewType
         self.otherBooksTitles = status.books.map(\.title)
         self.status = status
         let now = Date()
         switch viewType {
-        case .original:
-            self.book = Book.Entity(
-                id: UUID(),
-                tags: [],
-                title: "",
-                priority: status.books.count,
-                createdAt: now,
-                updatedAt: now
-            )
-        case .book(let formattedResponse):
-            self.book = Book.Entity(
-                id: UUID(),
-                tags: [],
-                title: formattedResponse.title,
-                priority: status.books.count,
-                authors: formattedResponse.authors,
-                publisher: formattedResponse.publisher,
-                publishedDate: formattedResponse.publishedDate,
-                bookDescription: formattedResponse.description,
-                smallThumbnail: formattedResponse.smallThumbnail,
-                thumbnail: formattedResponse.thumbnail,
-                deadline: nil,
-                createdAt: now,
-                updatedAt: now
-            )
+        case .new(let createType):
+            switch createType {
+            case .original:
+                self.book = Book.Entity(
+                    id: UUID(),
+                    tags: [],
+                    title: "",
+                    priority: status.books.count,
+                    createdAt: now,
+                    updatedAt: now
+                )
+            case .book(let formattedResponse):
+                self.book = Book.Entity(
+                    id: UUID(),
+                    tags: [],
+                    title: formattedResponse.title,
+                    priority: status.books.count,
+                    authors: formattedResponse.authors,
+                    publisher: formattedResponse.publisher,
+                    publishedDate: formattedResponse.publishedDate,
+                    bookDescription: formattedResponse.description,
+                    smallThumbnail: formattedResponse.smallThumbnail,
+                    thumbnail: formattedResponse.thumbnail,
+                    deadline: nil,
+                    createdAt: now,
+                    updatedAt: now
+                )
+            }
+        case .edit(let book):
+            self.book = book.toEntity()
+            if let thumbnailData = book.thumbnailData {
+                let uiImage = UIImage(data: thumbnailData)
+                self._photoPickedImage = State(initialValue: uiImage)
+            }
         }
     }
 
@@ -230,8 +264,7 @@ struct AddBookView: View {
                     ids.contains($0.id)
                 })
             )
-
-            let book = book.toOriginalModel(status: status, tags: tags, comments: [])
+            let book = book.toOriginalModel(status: status, tags: tags, comments: viewType.book?.comments ?? [])
             modelContext.insert(book)
             try modelContext.save()
             dismiss()
