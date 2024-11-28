@@ -80,7 +80,7 @@ struct StatusView: View {
                     vstackHeight = $0
                 }
                 .padding(.bottom, horizontalSizeClass == .compact ? 0 : max(0, scrollViewHeight - vstackHeight))
-                .frame(width: horizontalSizeClass == .compact ? mainWindowSize.width : 350)
+                .frame(width: horizontalSizeClass == .compact ? nil : 350)
                 .contentShape(Rectangle())
                 .dropDestination(for: DraggableData.self) { draggableData, location in
                     draggableData.lazy.map {

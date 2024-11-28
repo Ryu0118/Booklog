@@ -49,8 +49,8 @@ struct BoardView: View {
                     StatusView(status: status)
                 }
             }
+            .padding(.horizontal, 4)
         }
-        .padding(.horizontal, 4)
         .navigationTitle(board.name)
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(edges: .bottom)
