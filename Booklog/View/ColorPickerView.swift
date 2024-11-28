@@ -1,51 +1,6 @@
 import SwiftUI
 import UIKit
 
-struct ColorPickerView: UIViewControllerRepresentable {
-    @Environment(\.dismiss) fileprivate var dismiss
-    let onColorSelected: (UIColor) -> Void
-    private let selectedColor: UIColor
-
-    init(selectedColor: Color, onColorSelected: @escaping (UIColor) -> Void) {
-        self.onColorSelected = onColorSelected
-        self.selectedColor = UIColor(selectedColor)
-    }
-
-    func makeCoordinator() -> Coodinator {
-        Coodinator(parent: self)
-    }
-
-    func makeUIViewController(context: Context) -> UIColorPickerViewController {
-        let picker = UIColorPickerViewController()
-        picker.delegate = context.coordinator
-//        picker.modalPresentationStyle = .formSheet
-//        picker.
-        picker.supportsAlpha = false
-        picker.selectedColor = selectedColor
-        picker.modalPresentationStyle = .popover
-        return picker
-    }
-
-    func updateUIViewController(_: UIColorPickerViewController, context _: Context) {}
-
-    final class Coodinator: NSObject, UIColorPickerViewControllerDelegate {
-        private let parent: ColorPickerView
-
-        fileprivate init(parent: ColorPickerView) {
-            self.parent = parent
-        }
-
-        func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
-            parent.onColorSelected(viewController.selectedColor)
-            parent.dismiss()
-        }
-
-        func colorPickerViewController(_ viewController: UIColorPickerViewController, didSelect _: UIColor, continuously _: Bool) {
-            parent.onColorSelected(viewController.selectedColor)
-        }
-    }
-}
-
 @MainActor
 struct ColorPickerWellView: UIViewRepresentable {
     private var selectedColor: Color
