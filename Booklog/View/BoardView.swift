@@ -41,7 +41,7 @@ struct BoardView: View {
     }
 
     var body: some View {
-        let Stack = horizontalSizeClass == .compact ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
+        let Stack = horizontalSizeClass == .compact ? AnyLayout(VStackLayout(spacing: 4)) : AnyLayout(HStackLayout(spacing: 4))
         let axis: Axis.Set = horizontalSizeClass == .compact ? .vertical : .horizontal
         ScrollView(axis, showsIndicators: horizontalSizeClass != .compact) {
             Stack {
