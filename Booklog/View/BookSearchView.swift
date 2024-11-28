@@ -12,6 +12,7 @@ struct BookSearchView: View {
     @State private var task: Task<Void, any Error>?
     @State private var isAlertPresented = false
     @State private var presentingError: (any LocalizedError)?
+    @State private var isSearchablePresented = true
 
     private let booksClient = GoogleBooksClient()
 
@@ -42,7 +43,7 @@ struct BookSearchView: View {
                 .buttonStyle(.plain)
             }
             .navigationTitle("Search books")
-            .searchable(text: $searchQuery, isPresented: .constant(true), prompt: "Enter the name of the book you want to search")
+            .searchable(text: $searchQuery, isPresented: $isSearchablePresented, prompt: "Enter the name of the book you want to search")
             .onSubmit(of: .search) {
                 task = Task {
                     do {
